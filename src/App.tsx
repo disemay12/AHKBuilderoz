@@ -8,6 +8,9 @@ import ScriptManager from './components/ScriptManager';
 import OutputPanel from './components/OutputPanel';
 import Simulator from './components/Simulator';
 import AIGenerator from './components/AIGenerator';
+import CommandPalette from './components/CommandPalette';
+import ThemeSwitcher from './components/ThemeSwitcher';
+import VersionHistory from './components/VersionHistory';
 import Tooltip from './components/Tooltip';
 import {
   Code2,
@@ -39,6 +42,7 @@ export default function App() {
   const [showOutput, setShowOutput] = useState(false);
   const [showSimulator, setShowSimulator] = useState(false);
   const [showTextToMacro, setShowTextToMacro] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
 
   // Load last script
   useEffect(() => {
@@ -154,17 +158,182 @@ F1::
     input.click();
   };
 
-  // Keyboard shortcut for save
+  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Save: Ctrl+S
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         handleSave();
       }
+      // Command Palette: Ctrl+Shift+P
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'P') {
+        e.preventDefault();
+        setShowCommandPalette(true);
+      }
+      // Toggle Sidebar: Ctrl+B
+      if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+        e.preventDefault();
+        setShowSidebar(!showSidebar);
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [handleSave]);
+  }, [handleSave, showSidebar]);
+
+  // Command palette commands
+  const commands = [
+    {
+      id: 'save',
+      label: 'Сохранить скрипт',
+      description: 'Сохранить текущий скрипт (Ctrl+S)',
+      icon: '💾',
+      shortcut: 'Ctrl+S',
+      action: handleSave,
+    },
+    {
+      id: 'export',
+      label: 'Экспорт в .ahk файл',
+      description: 'Скачать скрипт как файл AutoHotkey',
+      icon: '📥',
+      action: handleExport,
+    },
+    {
+      id: 'import',
+      label: 'Импорт .ahk файла',
+      description: 'Загрузить скрипт из файла',
+      icon: '📤',
+      action: handleImport,
+    },
+    {
+      id: 'toggle-sidebar',
+      label: 'Показать/скрыть боковую панель',
+      description: 'Переключить видимость боковой панели',
+      icon: '📋',
+      shortcut: 'Ctrl+B',
+      action: () => setShowSidebar(!showSidebar),
+    },
+    {
+      id: 'toggle-output',
+      label: 'Показать/скрыть панель анализа',
+      description: 'Переключить видимость панели анализа кода',
+      icon: '🔍',
+      action: () => setShowOutput(!showOutput),
+    },
+    {
+      id: 'toggle-simulator',
+      label: 'Показать/скрыть симулятор',
+      description: 'Переключить видимость симулятора выполнения',
+      icon: '▶️',
+      action: () => setShowSimulator(!showSimulator),
+    },
+    {
+      id: 'toggle-ai',
+      label: 'Показать/скрыть ИИ-генератор',
+      description: 'Переключить видимость ИИ-генератора макросов',
+      icon: '✨',
+      action: () => setShowTextToMacro(!showTextToMacro),
+    },
+    {
+      id: 'tab-editor',
+      label: 'Переключиться на редактор',
+      description: 'Открыть вкладку редактора кода',
+      icon: '📝',
+      action: () => setActiveTab('editor'),
+    },
+    {
+      id: 'tab-macros',
+      label: 'Переключиться на макросы',
+      description: 'Открыть вкладку визуального конструктора макросов',
+      icon: '🧩',
+      action: () => setActiveTab('macros'),
+    },
+    {
+      id: 'tab-docs',
+      label: 'Переключиться на документацию',
+      description: 'Открыть вкладку документации AHK',
+      icon: '📚',
+      action: () => setActiveTab('docs'),
+    },
+    {
+      id: 'tab-learn',
+      label: 'Переключиться на обучение',
+      description: 'Открыть вкладку обучающих уроков',
+      icon: '🎓',
+      action: () => setActiveTab('learn'),
+    },
+    {
+      id: 'new-script',
+      label: 'Новый скрипт',
+      description: 'Создать новый пустой скрипт',
+      icon: '📄',
+      action: () => {
+        setCode('; Новый скрипт\n\n');
+        setCurrentScript(null);
+        setSaved(false);
+      },
+    },
+    {
+      id: 'clear-code',
+      label: 'Очистить редактор',
+      description: 'Удалить весь код из редактора',
+      icon: '🗑️',
+      action: () => {
+        if (confirm('Очистить весь код в редакторе?')) {
+          setCode('');
+          setSaved(false);
+        }
+      },
+    },
+    {
+      id: 'theme-light',
+      label: 'Переключить на светлую тему',
+      description: 'Установить светлую тему оформления',
+      icon: '☀️',
+      action: () => {
+        localStorage.setItem('ahk-theme', 'light');
+        window.location.reload();
+      },
+    },
+    {
+      id: 'theme-dark',
+      label: 'Переключить на тёмную тему',
+      description: 'Установить тёмную тему оформления',
+      icon: '🌙',
+      action: () => {
+        localStorage.setItem('ahk-theme', 'dark');
+        window.location.reload();
+      },
+    },
+    {
+      id: 'theme-system',
+      label: 'Переключить на системную тему',
+      description: 'Автоматически по настройкам системы',
+      icon: '🖥️',
+      action: () => {
+        localStorage.setItem('ahk-theme', 'system');
+        window.location.reload();
+      },
+    },
+    {
+      id: 'save-version',
+      label: 'Сохранить версию скрипта',
+      description: 'Создать snapshot текущего кода',
+      icon: '📸',
+      action: () => {
+        const versions = JSON.parse(localStorage.getItem('ahk-version-history') || '[]');
+        const newVersion = {
+          id: Date.now().toString(),
+          code: code,
+          timestamp: Date.now(),
+          description: `Версия от ${new Date().toLocaleString('ru-RU')}`,
+        };
+        versions.unshift(newVersion);
+        localStorage.setItem('ahk-version-history', JSON.stringify(versions.slice(0, 20)));
+        alert('Версия сохранена!');
+      },
+    },
+  ];
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'editor', label: 'Редактор', icon: <Code2 size={18} /> },
@@ -183,6 +352,9 @@ F1::
             <span className="text-blue-400">AHK</span> Script Editor
           </h1>
         </div>
+
+        {/* Theme Switcher */}
+        <ThemeSwitcher />
 
         {/* Tabs */}
         <nav className="flex items-center gap-1">
@@ -215,6 +387,15 @@ F1::
               </span>
             </Tooltip>
           )}
+          
+          {/* Version History */}
+          <VersionHistory
+            currentCode={code}
+            onRestore={(restoredCode) => {
+              setCode(restoredCode);
+              setSaved(false);
+            }}
+          />
           <Tooltip content="Сохранить текущий скрипт (Ctrl+S)" position="bottom">
             <button
               onClick={handleSave}
@@ -275,6 +456,15 @@ F1::
               title="Боковая панель"
             >
               {showSidebar ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
+            </button>
+          </Tooltip>
+          <Tooltip content="Командная палитра (Ctrl+Shift+P)" position="bottom">
+            <button
+              onClick={() => setShowCommandPalette(true)}
+              className="p-2 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+              title="Команды"
+            >
+              <Settings size={16} />
             </button>
           </Tooltip>
         </div>
@@ -417,9 +607,17 @@ F1::
         <span className="mx-2">|</span>
         <span>Строк: {code.split('\n').length}</span>
         <div className="flex-1" />
+        <span className="mr-2">Ctrl+Shift+P — команды</span>
         {!saved && <span className="text-yellow-400">● Несохранённые изменения</span>}
         {saved && <span className="text-green-400">✓ Сохранено</span>}
       </footer>
+
+      {/* Command Palette */}
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        commands={commands}
+      />
     </div>
   );
 }
