@@ -5,6 +5,7 @@ export const defaultMacroBlocks: Omit<MacroBlock, 'id'>[] = [
   { type: 'send', label: '⌨️ Отправить клавиши', params: { text: 'Hello World', mode: 'Send' } },
   { type: 'delay', label: '⏱️ Задержка', params: { ms: '1000' } },
   { type: 'click', label: '🖱️ Клик мышью', params: { x: '100', y: '200', button: 'Left' } },
+  { type: 'findwindow', label: '🔍 Поиск окна', params: { title: 'Блокнот', action: 'WinActivate', class: '', process: '' } },
   { type: 'loop', label: '🔄 Цикл', params: { count: '5' }, children: [] },
   { type: 'if', label: '❓ Условие', params: { condition: 'x > 10' }, children: [] },
   { type: 'variable', label: '📦 Переменная', params: { name: 'myVar', value: '"текст"' } },
@@ -57,6 +58,37 @@ export function generateAHKCode(blocks: MacroBlock[], indent: number = 0): strin
         break;
       case 'msgbox':
         code += `${pad}MsgBox, % ${block.params.text}\n`;
+        break;
+      case 'findwindow':
+        const windowTarget = block.params.title || 'A';
+        const action = block.params.action || 'WinActivate';
+        if (action === 'WinWait') {
+          code += `${pad}WinWait, ${windowTarget}`;
+          if (block.params.class) code += `, , , ${block.params.class}`;
+          code += `\n`;
+          if (block.params.process) {
+            code += `${pad}if ErrorLevel\n${pad}{\n`;
+            code += `${pad}    MsgBox, Окно не найдено: ${windowTarget}\n`;
+            code += `${pad}    return\n`;
+            code += `${pad}}\n`;
+          }
+        } else if (action === 'WinExist') {
+          code += `${pad}if WinExist("${windowTarget}")\n${pad}{\n`;
+          if (block.children) {
+            code += generateAHKCode(block.children, indent + 1);
+          }
+          code += `${pad}}\n`;
+        } else if (action === 'WinGetTitle') {
+          const varName = block.params.variable || 'activeTitle';
+          code += `${pad}WinGetTitle, ${varName}, ${windowTarget}\n`;
+        } else if (action === 'WinGet') {
+          const varName = block.params.variable || 'activePID';
+          const cmd = block.params.command || 'PID';
+          code += `${pad}WinGet, ${varName}, ${cmd}, ${windowTarget}\n`;
+        } else {
+          // WinActivate, WinClose, WinMinimize, WinMaximize, WinHide, WinShow
+          code += `${pad}${action}, ${windowTarget}\n`;
+        }
         break;
     }
 

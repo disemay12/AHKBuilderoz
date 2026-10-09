@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Play, Square, Trash2, Terminal } from 'lucide-react';
+import Tooltip from './Tooltip';
 
 interface OutputPanelProps {
   code: string;
@@ -158,23 +159,29 @@ export default function OutputPanel({ code }: OutputPanelProps) {
       {/* Toolbar */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-700 bg-gray-800/50">
         <Terminal size={14} className="text-green-400" />
-        <span className="text-sm font-medium text-gray-300">Анализ и вывод</span>
+        <Tooltip content="Панель анализа показывает структуру вашего AHK скрипта: горячие клавиши, переменные, циклы и другие элементы" position="right">
+          <span className="text-sm font-medium text-gray-300 cursor-help">Анализ и вывод</span>
+        </Tooltip>
         <div className="flex-1" />
-        <button
-          onClick={handleAnalyze}
-          disabled={isRunning || !code.trim()}
-          className="flex items-center gap-1.5 px-3 py-1 rounded bg-green-600 hover:bg-green-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-xs font-medium transition-colors"
-        >
-          {isRunning ? <Square size={12} /> : <Play size={12} />}
-          {isRunning ? 'Анализ...' : 'Анализировать'}
-        </button>
-        <button
-          onClick={handleClear}
-          className="flex items-center gap-1.5 px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs font-medium transition-colors"
-        >
-          <Trash2 size={12} />
-          Очистить
-        </button>
+        <Tooltip content="Запустить анализ текущего скрипта — показать структуру, подсчитать элементы и найти потенциальные проблемы" position="bottom">
+          <button
+            onClick={handleAnalyze}
+            disabled={isRunning || !code.trim()}
+            className="flex items-center gap-1.5 px-3 py-1 rounded bg-green-600 hover:bg-green-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-xs font-medium transition-colors"
+          >
+            {isRunning ? <Square size={12} /> : <Play size={12} />}
+            {isRunning ? 'Анализ...' : 'Анализировать'}
+          </button>
+        </Tooltip>
+        <Tooltip content="Очистить панель вывода от предыдущих результатов анализа" position="bottom">
+          <button
+            onClick={handleClear}
+            className="flex items-center gap-1.5 px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs font-medium transition-colors"
+          >
+            <Trash2 size={12} />
+            Очистить
+          </button>
+        </Tooltip>
       </div>
 
       {/* Output */}

@@ -9,7 +9,7 @@ export interface AHKScript {
 
 export interface MacroBlock {
   id: string;
-  type: 'send' | 'delay' | 'click' | 'loop' | 'if' | 'hotkey' | 'variable' | 'comment' | 'run' | 'msgbox';
+  type: 'send' | 'delay' | 'click' | 'loop' | 'if' | 'hotkey' | 'variable' | 'comment' | 'run' | 'msgbox' | 'findwindow';
   label: string;
   params: Record<string, string>;
   children?: MacroBlock[];

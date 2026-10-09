@@ -3,9 +3,80 @@ import { v4 as uuidv4 } from 'uuid';
 import { MacroBlock } from '../types/ahk';
 import { defaultMacroBlocks, generateAHKCode, macroTemplates } from '../data/macroData';
 import { Plus, Trash2, ChevronUp, ChevronDown, Code, Copy, Check, FolderOpen } from 'lucide-react';
+import Tooltip from './Tooltip';
 
 interface MacroBuilderProps {
   onCodeGenerated: (code: string) => void;
+}
+
+const blockTooltips: Record<string, string> = {
+  hotkey: 'Назначает действие на комбинацию клавиш. Модификаторы: ^ (Ctrl), ! (Alt), # (Win), + (Shift)',
+  send: 'Эмулирует нажатия клавиш и ввод текста в активное окно',
+  delay: 'Пауза в миллисекундах (1000мс = 1 секунда) между действиями',
+  click: 'Эмулирует клик мышью в указанных координатах экрана',
+  findwindow: 'Ищет, активирует или получает информацию об окне по заголовку, классу или процессу',
+  loop: 'Повторяет вложенные действия указанное количество раз',
+  if: 'Выполняет действия только если условие истинно',
+  variable: 'Создаёт или изменяет переменную для хранения данных',
+  comment: 'Добавляет комментарий в код (игнорируется при выполнении)',
+  run: 'Запускает программу, документ или URL',
+  msgbox: 'Показывает диалоговое окно с сообщением',
+};
+
+const paramTooltips: Record<string, Record<string, string>> = {
+  hotkey: {
+    keys: 'Комбинация клавиш. Пример: ^!h (Ctrl+Alt+H), #n (Win+N), F1, ^+s (Ctrl+Shift+S)',
+    description: 'Описание горячей клавиши для справки',
+  },
+  send: {
+    text: 'Текст или клавиши для отправки. Спец. клавиши: {Enter}, {Tab}, {Space}, {Esc}',
+    mode: 'Режим отправки: Send (обычный), SendInput (быстрый), SendPlay (для игр), SendRaw (без спец. символов)',
+  },
+  delay: {
+    ms: 'Задержка в миллисекундах. 1000мс = 1 секунда. Минимум: 10мс',
+  },
+  click: {
+    x: 'Координата X (горизонтальная) в пикселях от левого края экрана',
+    y: 'Координата Y (вертикальная) в пикселях от верхнего края экрана',
+    button: 'Кнопка мыши: Left (левая), Right (правая), Middle (средняя)',
+  },
+  findwindow: {
+    title: 'Заголовок окна (или часть). "A" означает активное окно',
+    action: 'Действие: WinActivate (активировать), WinClose (закрыть), WinWait (ждать), WinExist (проверить), WinGetTitle (получить заголовок), WinGet (получить информацию)',
+    class: 'Класс окна (необязательно). Пример: ahk_class Notepad',
+    process: 'Имя процесса (необязательно). Пример: notepad.exe',
+    variable: 'Имя переменной для сохранения результата',
+    command: 'Команда WinGet: PID, ID, Count, MinMax, Style, ExStyle',
+  },
+  loop: {
+    count: 'Количество повторений. Оставьте пустым для бесконечного цикла',
+  },
+  if: {
+    condition: 'Условие для проверки. Примеры: x > 10, var = "текст", FileExist("file.txt")',
+  },
+  variable: {
+    name: 'Имя переменной (латиница, без пробелов). Пример: myVar, counter, userName',
+    value: 'Значение переменной. Строки в кавычках: "текст". Числа без кавычек: 42',
+  },
+  comment: {
+    text: 'Текст комментария. Игнорируется при выполнении скрипта',
+  },
+  run: {
+    program: 'Путь к программе или URL. Пример: notepad.exe, C:\\file.txt, https://...',
+    args: 'Аргументы командной строки (необязательно)',
+  },
+  msgbox: {
+    title: 'Заголовок окна сообщения',
+    text: 'Текст сообщения. Используйте %переменная% для вставки значений',
+  },
+};
+
+function getBlockTooltip(type: string): string {
+  return blockTooltips[type] || '';
+}
+
+function getParamTooltip(type: string, param: string): string {
+  return paramTooltips[type]?.[param] || `Параметр: ${param}`;
 }
 
 export default function MacroBuilder({ onCodeGenerated }: MacroBuilderProps) {
@@ -77,20 +148,28 @@ export default function MacroBuilder({ onCodeGenerated }: MacroBuilderProps) {
         onClick={() => setSelectedBlock(isSelected ? null : block.id)}
       >
         <div className="flex items-center justify-between mb-2">
-          <span className="font-medium text-sm">{block.label}</span>
+          <Tooltip content={getBlockTooltip(block.type)} position="top">
+            <span className="font-medium text-sm">{block.label}</span>
+          </Tooltip>
           <div className="flex gap-1">
-            <button onClick={(e) => { e.stopPropagation(); moveBlock(index, 'up'); }} 
-              className="p-1 hover:bg-gray-700 rounded" title="Вверх">
-              <ChevronUp size={14} />
-            </button>
-            <button onClick={(e) => { e.stopPropagation(); moveBlock(index, 'down'); }}
-              className="p-1 hover:bg-gray-700 rounded" title="Вниз">
-              <ChevronDown size={14} />
-            </button>
-            <button onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }}
-              className="p-1 hover:bg-red-900/50 text-red-400 rounded" title="Удалить">
-              <Trash2 size={14} />
-            </button>
+            <Tooltip content="Переместить блок выше" position="top">
+              <button onClick={(e) => { e.stopPropagation(); moveBlock(index, 'up'); }} 
+                className="p-1 hover:bg-gray-700 rounded" title="Вверх">
+                <ChevronUp size={14} />
+              </button>
+            </Tooltip>
+            <Tooltip content="Переместить блок ниже" position="top">
+              <button onClick={(e) => { e.stopPropagation(); moveBlock(index, 'down'); }}
+                className="p-1 hover:bg-gray-700 rounded" title="Вниз">
+                <ChevronDown size={14} />
+              </button>
+            </Tooltip>
+            <Tooltip content="Удалить этот блок из макроса" position="top">
+              <button onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }}
+                className="p-1 hover:bg-red-900/50 text-red-400 rounded" title="Удалить">
+                <Trash2 size={14} />
+              </button>
+            </Tooltip>
           </div>
         </div>
         
@@ -98,7 +177,9 @@ export default function MacroBuilder({ onCodeGenerated }: MacroBuilderProps) {
           <div className="space-y-2 mt-2 pt-2 border-t border-gray-700">
             {Object.entries(block.params).map(([key, val]) => (
               <div key={key} className="flex items-center gap-2">
-                <label className="text-xs text-gray-400 w-20 capitalize">{key}:</label>
+                <Tooltip content={getParamTooltip(block.type, key)} position="left">
+                  <label className="text-xs text-gray-400 w-20 capitalize cursor-help">{key}:</label>
+                </Tooltip>
                 <input
                   type="text"
                   value={val}
@@ -118,36 +199,44 @@ export default function MacroBuilder({ onCodeGenerated }: MacroBuilderProps) {
     <div className="h-full flex flex-col">
       {/* Toolbar */}
       <div className="flex items-center gap-2 p-3 border-b border-gray-700 bg-gray-800/50">
-        <button
-          onClick={() => setShowPalette(!showPalette)}
-          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-            showPalette ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-          }`}
-        >
-          <Plus size={14} className="inline mr-1" /> Блоки
-        </button>
-        <button
-          onClick={() => setShowTemplates(!showTemplates)}
-          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-            showTemplates ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-          }`}
-        >
-          <FolderOpen size={14} className="inline mr-1" /> Шаблоны
-        </button>
+        <Tooltip content="Показать/скрыть палитру блоков для добавления в макрос">
+          <button
+            onClick={() => setShowPalette(!showPalette)}
+            className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+              showPalette ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            <Plus size={14} className="inline mr-1" /> Блоки
+          </button>
+        </Tooltip>
+        <Tooltip content="Выбрать готовый шаблон макроса для быстрого старта">
+          <button
+            onClick={() => setShowTemplates(!showTemplates)}
+            className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+              showTemplates ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            <FolderOpen size={14} className="inline mr-1" /> Шаблоны
+          </button>
+        </Tooltip>
         <div className="flex-1" />
-        <button
-          onClick={handleCopy}
-          className="px-3 py-1.5 rounded text-sm font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
-        >
-          {copied ? <Check size={14} className="inline mr-1" /> : <Copy size={14} className="inline mr-1" />}
-          {copied ? 'Скопировано!' : 'Копировать'}
-        </button>
-        <button
-          onClick={handleGenerate}
-          className="px-3 py-1.5 rounded text-sm font-medium bg-green-600 text-white hover:bg-green-500 transition-colors"
-        >
-          <Code size={14} className="inline mr-1" /> Генерировать код
-        </button>
+        <Tooltip content="Скопировать сгенерированный AHK код в буфер обмена">
+          <button
+            onClick={handleCopy}
+            className="px-3 py-1.5 rounded text-sm font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+          >
+            {copied ? <Check size={14} className="inline mr-1" /> : <Copy size={14} className="inline mr-1" />}
+            {copied ? 'Скопировано!' : 'Копировать'}
+          </button>
+        </Tooltip>
+        <Tooltip content="Сгенерировать AHK код из блоков и вставить его в редактор">
+          <button
+            onClick={handleGenerate}
+            className="px-3 py-1.5 rounded text-sm font-medium bg-green-600 text-white hover:bg-green-500 transition-colors"
+          >
+            <Code size={14} className="inline mr-1" /> Генерировать код
+          </button>
+        </Tooltip>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
@@ -157,13 +246,14 @@ export default function MacroBuilder({ onCodeGenerated }: MacroBuilderProps) {
             <h3 className="text-sm font-bold text-gray-300 mb-3">Добавить блок:</h3>
             <div className="space-y-1.5">
               {defaultMacroBlocks.map((block, i) => (
-                <button
-                  key={i}
-                  onClick={() => addBlock(block)}
-                  className="w-full text-left px-3 py-2 rounded bg-gray-700/50 hover:bg-gray-600/50 text-sm text-gray-200 transition-colors border border-transparent hover:border-gray-500"
-                >
-                  {block.label}
-                </button>
+                <Tooltip key={i} content={getBlockTooltip(block.type)} position="right">
+                  <button
+                    onClick={() => addBlock(block)}
+                    className="w-full text-left px-3 py-2 rounded bg-gray-700/50 hover:bg-gray-600/50 text-sm text-gray-200 transition-colors border border-transparent hover:border-gray-500"
+                  >
+                    {block.label}
+                  </button>
+                </Tooltip>
               ))}
             </div>
           </div>
@@ -175,14 +265,15 @@ export default function MacroBuilder({ onCodeGenerated }: MacroBuilderProps) {
             <h3 className="text-sm font-bold text-gray-300 mb-3">Шаблоны макросов:</h3>
             <div className="space-y-2">
               {macroTemplates.map((template, i) => (
-                <button
-                  key={i}
-                  onClick={() => loadTemplate(template)}
-                  className="w-full text-left px-3 py-3 rounded bg-purple-900/30 hover:bg-purple-800/40 text-sm transition-colors border border-purple-700/30 hover:border-purple-600/50"
-                >
-                  <div className="font-medium text-purple-200">{template.name}</div>
-                  <div className="text-xs text-gray-400 mt-1">{template.description}</div>
-                </button>
+                <Tooltip key={i} content={`Загрузить шаблон "${template.name}" — ${template.description}`} position="right">
+                  <button
+                    onClick={() => loadTemplate(template)}
+                    className="w-full text-left px-3 py-3 rounded bg-purple-900/30 hover:bg-purple-800/40 text-sm transition-colors border border-purple-700/30 hover:border-purple-600/50"
+                  >
+                    <div className="font-medium text-purple-200">{template.name}</div>
+                    <div className="text-xs text-gray-400 mt-1">{template.description}</div>
+                  </button>
+                </Tooltip>
               ))}
             </div>
           </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { lessons } from '../data/ahkData';
 import { BookOpen, CheckCircle, ChevronRight, Eye, Lightbulb, Award } from 'lucide-react';
+import Tooltip from './Tooltip';
 
 interface LearningProps {
   onInsertCode: (code: string) => void;
@@ -144,13 +145,15 @@ export default function Learning({ onInsertCode }: LearningProps) {
             {currentLesson.solution && (
               <div className="mb-6">
                 {!showSolution ? (
-                  <button
-                    onClick={() => setShowSolution(true)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-200 transition-colors"
-                  >
-                    <Eye size={16} />
-                    Показать решение
-                  </button>
+                  <Tooltip content="Показать правильный ответ на задание" position="top">
+                    <button
+                      onClick={() => setShowSolution(true)}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-200 transition-colors"
+                    >
+                      <Eye size={16} />
+                      Показать решение
+                    </button>
+                  </Tooltip>
                 ) : (
                   <div>
                     <div className="flex items-center justify-between mb-2">
@@ -158,12 +161,14 @@ export default function Learning({ onInsertCode }: LearningProps) {
                         <CheckCircle size={20} />
                         Решение:
                       </h3>
-                      <button
-                        onClick={() => onInsertCode(currentLesson.solution!)}
-                        className="text-xs px-3 py-1.5 rounded bg-green-900/50 text-green-300 hover:bg-green-800/50 transition-colors"
-                      >
-                        Вставить в редактор
-                      </button>
+                      <Tooltip content="Вставить решение в редактор для изучения и модификации" position="top">
+                        <button
+                          onClick={() => onInsertCode(currentLesson.solution!)}
+                          className="text-xs px-3 py-1.5 rounded bg-green-900/50 text-green-300 hover:bg-green-800/50 transition-colors"
+                        >
+                          Вставить в редактор
+                        </button>
+                      </Tooltip>
                     </div>
                     <pre className="bg-black/50 rounded-lg p-4 text-sm text-gray-200 overflow-x-auto border border-gray-700">
                       <code>{currentLesson.solution}</code>
@@ -176,17 +181,21 @@ export default function Learning({ onInsertCode }: LearningProps) {
             {/* Complete button */}
             <div className="mt-8 pt-6 border-t border-gray-700">
               {!completedLessons.has(currentLesson.id) ? (
-                <button
-                  onClick={() => markComplete(currentLesson.id)}
-                  className="px-6 py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-medium transition-all shadow-lg shadow-green-900/30"
-                >
-                  ✓ Отметить как пройденный
-                </button>
+                <Tooltip content="Отметить этот урок как пройденный и перейти к следующему" position="top">
+                  <button
+                    onClick={() => markComplete(currentLesson.id)}
+                    className="px-6 py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-medium transition-all shadow-lg shadow-green-900/30"
+                  >
+                    ✓ Отметить как пройденный
+                  </button>
+                </Tooltip>
               ) : (
-                <div className="flex items-center gap-2 text-green-400">
-                  <CheckCircle size={20} />
-                  <span className="font-medium">Урок пройден!</span>
-                </div>
+                <Tooltip content="Поздравляем! Вы успешно прошли этот урок" position="top">
+                  <div className="flex items-center gap-2 text-green-400 cursor-help">
+                    <CheckCircle size={20} />
+                    <span className="font-medium">Урок пройден!</span>
+                  </div>
+                </Tooltip>
               )}
             </div>
           </div>

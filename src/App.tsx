@@ -6,6 +6,7 @@ import Documentation from './components/Documentation';
 import Learning from './components/Learning';
 import ScriptManager from './components/ScriptManager';
 import OutputPanel from './components/OutputPanel';
+import Tooltip from './components/Tooltip';
 import {
   Code2,
   Blocks,
@@ -180,18 +181,19 @@ F1::
         {/* Tabs */}
         <nav className="flex items-center gap-1">
           {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                activeTab === tab.id
-                  ? 'bg-blue-600/20 text-blue-300 border border-blue-500/30'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
-              }`}
-            >
-              {tab.icon}
-              <span className="hidden sm:inline">{tab.label}</span>
-            </button>
+            <Tooltip key={tab.id} content={`Переключиться на вкладку "${tab.label}"`} position="bottom">
+              <button
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-blue-600/20 text-blue-300 border border-blue-500/30'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                }`}
+              >
+                {tab.icon}
+                <span className="hidden sm:inline">{tab.label}</span>
+              </button>
+            </Tooltip>
           ))}
         </nav>
 
@@ -200,47 +202,59 @@ F1::
         {/* Actions */}
         <div className="flex items-center gap-2">
           {currentScript && (
-            <span className="text-xs text-gray-500 mr-2 hidden md:inline">
-              {currentScript.name}.ahk
-              {!saved && <span className="text-yellow-400 ml-1">●</span>}
-            </span>
+            <Tooltip content={`Текущий скрипт: ${currentScript.name}.ahk${!saved ? ' (несохранённые изменения)' : ''}`} position="bottom">
+              <span className="text-xs text-gray-500 mr-2 hidden md:inline cursor-help">
+                {currentScript.name}.ahk
+                {!saved && <span className="text-yellow-400 ml-1">●</span>}
+              </span>
+            </Tooltip>
           )}
-          <button
-            onClick={handleSave}
-            className="p-2 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
-            title="Сохранить (Ctrl+S)"
-          >
-            <Save size={16} />
-          </button>
-          <button
-            onClick={handleExport}
-            className="p-2 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
-            title="Экспорт .ahk"
-          >
-            <Download size={16} />
-          </button>
-          <button
-            onClick={handleImport}
-            className="p-2 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
-            title="Импорт .ahk"
-          >
-            <Upload size={16} />
-          </button>
+          <Tooltip content="Сохранить текущий скрипт (Ctrl+S)" position="bottom">
+            <button
+              onClick={handleSave}
+              className="p-2 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+              title="Сохранить (Ctrl+S)"
+            >
+              <Save size={16} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Экспортировать скрипт в файл .ahk" position="bottom">
+            <button
+              onClick={handleExport}
+              className="p-2 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+              title="Экспорт .ahk"
+            >
+              <Download size={16} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Импортировать .ahk файл в редактор" position="bottom">
+            <button
+              onClick={handleImport}
+              className="p-2 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+              title="Импорт .ahk"
+            >
+              <Upload size={16} />
+            </button>
+          </Tooltip>
           <div className="w-px h-6 bg-gray-700 mx-1" />
-          <button
-            onClick={() => setShowOutput(!showOutput)}
-            className={`p-2 rounded transition-colors ${showOutput ? 'bg-green-900/50 text-green-400' : 'hover:bg-gray-700 text-gray-400 hover:text-white'}`}
-            title="Панель анализа"
-          >
-            <Terminal size={16} />
-          </button>
-          <button
-            onClick={() => setShowSidebar(!showSidebar)}
-            className="p-2 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
-            title="Боковая панель"
-          >
-            {showSidebar ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
-          </button>
+          <Tooltip content={showOutput ? 'Скрыть панель анализа кода' : 'Показать панель анализа кода'} position="bottom">
+            <button
+              onClick={() => setShowOutput(!showOutput)}
+              className={`p-2 rounded transition-colors ${showOutput ? 'bg-green-900/50 text-green-400' : 'hover:bg-gray-700 text-gray-400 hover:text-white'}`}
+              title="Панель анализа"
+            >
+              <Terminal size={16} />
+            </button>
+          </Tooltip>
+          <Tooltip content={showSidebar ? 'Скрыть боковую панель' : 'Показать боковую панель со скриптами'} position="bottom">
+            <button
+              onClick={() => setShowSidebar(!showSidebar)}
+              className="p-2 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+              title="Боковая панель"
+            >
+              {showSidebar ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
+            </button>
+          </Tooltip>
         </div>
       </header>
 
@@ -250,22 +264,26 @@ F1::
         {showSidebar && (
           <aside className="w-72 border-r border-gray-700 flex flex-col bg-gray-800/30 shrink-0">
             <div className="flex border-b border-gray-700">
-              <button
-                onClick={() => setSidebarTab('scripts')}
-                className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                  sidebarTab === 'scripts' ? 'text-blue-300 border-b-2 border-blue-500' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <FolderOpen size={14} className="inline mr-1" /> Скрипты
-              </button>
-              <button
-                onClick={() => setSidebarTab('info')}
-                className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                  sidebarTab === 'info' ? 'text-blue-300 border-b-2 border-blue-500' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <Settings size={14} className="inline mr-1" /> Инфо
-              </button>
+              <Tooltip content="Управление сохранёнными скриптами: создание, открытие, экспорт" position="bottom">
+                <button
+                  onClick={() => setSidebarTab('scripts')}
+                  className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                    sidebarTab === 'scripts' ? 'text-blue-300 border-b-2 border-blue-500' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <FolderOpen size={14} className="inline mr-1" /> Скрипты
+                </button>
+              </Tooltip>
+              <Tooltip content="Информация о редакторе, горячие клавиши и статистика" position="bottom">
+                <button
+                  onClick={() => setSidebarTab('info')}
+                  className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                    sidebarTab === 'info' ? 'text-blue-300 border-b-2 border-blue-500' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Settings size={14} className="inline mr-1" /> Инфо
+                </button>
+              </Tooltip>
             </div>
             <div className="flex-1 overflow-hidden">
               {sidebarTab === 'scripts' ? (

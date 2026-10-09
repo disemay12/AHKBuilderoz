@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ahkDocumentation } from '../data/ahkData';
 import { Search, BookOpen, Code, Lightbulb } from 'lucide-react';
+import Tooltip from './Tooltip';
 
 interface DocumentationProps {
   onInsertExample: (code: string) => void;
@@ -36,17 +37,18 @@ export default function Documentation({ onInsertExample }: DocumentationProps) {
         </div>
         <div className="flex gap-2 mt-3">
           {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                selectedCategory === cat
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
-            >
-              {cat === 'all' ? 'Все' : cat}
-            </button>
+            <Tooltip key={cat} content={cat === 'all' ? 'Показать все темы документации' : `Показать только категорию "${cat}"`} position="bottom">
+              <button
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  selectedCategory === cat
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                {cat === 'all' ? 'Все' : cat}
+              </button>
+            </Tooltip>
           ))}
         </div>
       </div>
@@ -81,12 +83,14 @@ export default function Documentation({ onInsertExample }: DocumentationProps) {
                   <div className="flex items-center gap-2 mb-2">
                     <Code size={14} className="text-green-400" />
                     <span className="text-sm font-medium text-green-400">Пример кода:</span>
-                    <button
-                      onClick={() => onInsertExample(doc.example)}
-                      className="ml-auto text-xs px-2 py-1 rounded bg-green-900/50 text-green-300 hover:bg-green-800/50 transition-colors"
-                    >
-                      Вставить в редактор
-                    </button>
+                    <Tooltip content="Вставить этот пример в редактор кода для изучения и редактирования" position="top">
+                      <button
+                        onClick={() => onInsertExample(doc.example)}
+                        className="ml-auto text-xs px-2 py-1 rounded bg-green-900/50 text-green-300 hover:bg-green-800/50 transition-colors"
+                      >
+                        Вставить в редактор
+                      </button>
+                    </Tooltip>
                   </div>
                   <pre className="bg-black/50 rounded-lg p-3 text-sm text-gray-200 overflow-x-auto border border-gray-700">
                     <code>{doc.example}</code>
