@@ -1,5 +1,368 @@
+import { useState, useCallback, useEffect } from 'react';
+import { AHKScript } from './types/ahk';
+import CodeEditor from './components/CodeEditor';
+import MacroBuilder from './components/MacroBuilder';
+import Documentation from './components/Documentation';
+import Learning from './components/Learning';
+import ScriptManager from './components/ScriptManager';
+import OutputPanel from './components/OutputPanel';
+import {
+  Code2,
+  Blocks,
+  BookOpen,
+  GraduationCap,
+  FolderOpen,
+  Save,
+  Download,
+  Upload,
+  Settings,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Zap,
+  Terminal,
+} from 'lucide-react';
+
+type Tab = 'editor' | 'macros' | 'docs' | 'learn';
+
 export default function App() {
+  const [activeTab, setActiveTab] = useState<Tab>('editor');
+  const [currentScript, setCurrentScript] = useState<AHKScript | null>(null);
+  const [code, setCode] = useState<string>('');
+  const [showSidebar, setShowSidebar] = useState(true);
+  const [sidebarTab, setSidebarTab] = useState<'scripts' | 'info'>('scripts');
+  const [saved, setSaved] = useState(true);
+  const [showOutput, setShowOutput] = useState(false);
+
+  // Load last script
+  useEffect(() => {
+    const lastScriptId = localStorage.getItem('ahk-last-script');
+    const scripts = localStorage.getItem('ahk-scripts');
+    if (lastScriptId && scripts) {
+      const parsed = JSON.parse(scripts) as AHKScript[];
+      const found = parsed.find(s => s.id === lastScriptId);
+      if (found) {
+        setCurrentScript(found);
+        setCode(found.code);
+      }
+    }
+    if (!currentScript && (!scripts || JSON.parse(scripts).length === 0)) {
+      // Create a default script
+      const defaultCode = `; Добро пожаловать в AHK Script Editor!
+; Это ваш первый скрипт AutoHotkey
+
+; Нажмите Ctrl+Alt+H для показа приветствия
+^!h::
+    MsgBox, Привет! Это ваш первый AHK скрипт!
+    return
+
+; F1 показывает справку
+F1::
+    Run, https://www.autohotkey.com/docs/
+    return
+`;
+      setCode(defaultCode);
+    }
+  }, []);
+
+  const handleCodeChange = useCallback((newCode: string) => {
+    setCode(newCode);
+    setSaved(false);
+  }, []);
+
+  const handleSave = useCallback(() => {
+    if (!currentScript) return;
+    const updated = { ...currentScript, code, updatedAt: new Date().toISOString() };
+    setCurrentScript(updated);
+    localStorage.setItem('ahk-last-script', updated.id);
+    
+    const scripts = localStorage.getItem('ahk-scripts');
+    const parsed = scripts ? JSON.parse(scripts) as AHKScript[] : [];
+    const idx = parsed.findIndex(s => s.id === updated.id);
+    if (idx >= 0) {
+      parsed[idx] = updated;
+    } else {
+      parsed.push(updated);
+    }
+    localStorage.setItem('ahk-scripts', JSON.stringify(parsed));
+    setSaved(true);
+  }, [currentScript, code]);
+
+  const handleSelectScript = useCallback((script: AHKScript | null) => {
+    setCurrentScript(script);
+    if (script) {
+      setCode(script.code);
+      localStorage.setItem('ahk-last-script', script.id);
+    }
+    setSaved(true);
+  }, []);
+
+  const handleUpdateScript = useCallback((script: AHKScript) => {
+    setCurrentScript(script);
+    setCode(script.code);
+  }, []);
+
+  const handleCodeGenerated = useCallback((generatedCode: string) => {
+    setCode(prev => prev + '\n' + generatedCode);
+    setActiveTab('editor');
+    setSaved(false);
+  }, []);
+
+  const handleInsertExample = useCallback((exampleCode: string) => {
+    setCode(prev => prev + '\n\n' + exampleCode);
+    setActiveTab('editor');
+    setSaved(false);
+  }, []);
+
+  const handleInsertCode = useCallback((lessonCode: string) => {
+    setCode(prev => prev + '\n\n; --- Пример из урока ---\n' + lessonCode);
+    setActiveTab('editor');
+    setSaved(false);
+  }, []);
+
+  const handleExport = () => {
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = currentScript ? `${currentScript.name}.ahk` : 'script.ahk';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.ahk,.txt';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const importedCode = ev.target?.result as string;
+        setCode(importedCode);
+        setSaved(false);
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+
+  // Keyboard shortcut for save
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [handleSave]);
+
+  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+    { id: 'editor', label: 'Редактор', icon: <Code2 size={18} /> },
+    { id: 'macros', label: 'Макросы', icon: <Blocks size={18} /> },
+    { id: 'docs', label: 'Документация', icon: <BookOpen size={18} /> },
+    { id: 'learn', label: 'Обучение', icon: <GraduationCap size={18} /> },
+  ];
+
   return (
-    <div/>
+    <div className="h-screen w-screen flex flex-col bg-gray-900 text-white overflow-hidden">
+      {/* Top Bar */}
+      <header className="h-12 flex items-center px-4 border-b border-gray-700 bg-gray-800/80 backdrop-blur-sm shrink-0">
+        <div className="flex items-center gap-2 mr-6">
+          <Zap size={20} className="text-yellow-400" />
+          <h1 className="font-bold text-sm tracking-wide">
+            <span className="text-blue-400">AHK</span> Script Editor
+          </h1>
+        </div>
+
+        {/* Tabs */}
+        <nav className="flex items-center gap-1">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                activeTab === tab.id
+                  ? 'bg-blue-600/20 text-blue-300 border border-blue-500/30'
+                  : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+              }`}
+            >
+              {tab.icon}
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="flex-1" />
+
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          {currentScript && (
+            <span className="text-xs text-gray-500 mr-2 hidden md:inline">
+              {currentScript.name}.ahk
+              {!saved && <span className="text-yellow-400 ml-1">●</span>}
+            </span>
+          )}
+          <button
+            onClick={handleSave}
+            className="p-2 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+            title="Сохранить (Ctrl+S)"
+          >
+            <Save size={16} />
+          </button>
+          <button
+            onClick={handleExport}
+            className="p-2 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+            title="Экспорт .ahk"
+          >
+            <Download size={16} />
+          </button>
+          <button
+            onClick={handleImport}
+            className="p-2 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+            title="Импорт .ahk"
+          >
+            <Upload size={16} />
+          </button>
+          <div className="w-px h-6 bg-gray-700 mx-1" />
+          <button
+            onClick={() => setShowOutput(!showOutput)}
+            className={`p-2 rounded transition-colors ${showOutput ? 'bg-green-900/50 text-green-400' : 'hover:bg-gray-700 text-gray-400 hover:text-white'}`}
+            title="Панель анализа"
+          >
+            <Terminal size={16} />
+          </button>
+          <button
+            onClick={() => setShowSidebar(!showSidebar)}
+            className="p-2 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+            title="Боковая панель"
+          >
+            {showSidebar ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar */}
+        {showSidebar && (
+          <aside className="w-72 border-r border-gray-700 flex flex-col bg-gray-800/30 shrink-0">
+            <div className="flex border-b border-gray-700">
+              <button
+                onClick={() => setSidebarTab('scripts')}
+                className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                  sidebarTab === 'scripts' ? 'text-blue-300 border-b-2 border-blue-500' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <FolderOpen size={14} className="inline mr-1" /> Скрипты
+              </button>
+              <button
+                onClick={() => setSidebarTab('info')}
+                className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                  sidebarTab === 'info' ? 'text-blue-300 border-b-2 border-blue-500' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Settings size={14} className="inline mr-1" /> Инфо
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              {sidebarTab === 'scripts' ? (
+                <ScriptManager
+                  currentScript={currentScript}
+                  onSelectScript={handleSelectScript}
+                  onUpdateScript={handleUpdateScript}
+                />
+              ) : (
+                <div className="p-4 space-y-4 overflow-y-auto h-full">
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-300 mb-2">О редакторе</h3>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      AHK Script Editor — это веб-приложение для создания, редактирования 
+                      и изучения скриптов AutoHotkey. Поддерживает подсветку синтаксиса, 
+                      автодополнение, визуальный конструктор макросов и обучающий режим.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-300 mb-2">Горячие клавиши</h3>
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between text-gray-400">
+                        <span>Сохранить</span>
+                        <kbd className="px-1.5 py-0.5 bg-gray-700 rounded text-gray-300">Ctrl+S</kbd>
+                      </div>
+                      <div className="flex justify-between text-gray-400">
+                        <span>Автодополнение</span>
+                        <kbd className="px-1.5 py-0.5 bg-gray-700 rounded text-gray-300">Ctrl+Space</kbd>
+                      </div>
+                      <div className="flex justify-between text-gray-400">
+                        <span>Комментарий</span>
+                        <kbd className="px-1.5 py-0.5 bg-gray-700 rounded text-gray-300">Ctrl+/</kbd>
+                      </div>
+                      <div className="flex justify-between text-gray-400">
+                        <span>Поиск</span>
+                        <kbd className="px-1.5 py-0.5 bg-gray-700 rounded text-gray-300">Ctrl+F</kbd>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-300 mb-2">AHK модификаторы</h3>
+                    <div className="space-y-1 text-xs text-gray-400">
+                      <div><kbd className="px-1 bg-gray-700 rounded text-yellow-300">#</kbd> — Win</div>
+                      <div><kbd className="px-1 bg-gray-700 rounded text-yellow-300">^</kbd> — Ctrl</div>
+                      <div><kbd className="px-1 bg-gray-700 rounded text-yellow-300">!</kbd> — Alt</div>
+                      <div><kbd className="px-1 bg-gray-700 rounded text-yellow-300">+</kbd> — Shift</div>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-300 mb-2">Статистика</h3>
+                    <div className="text-xs text-gray-400 space-y-1">
+                      <div>Строк кода: <span className="text-white">{code.split('\n').length}</span></div>
+                      <div>Символов: <span className="text-white">{code.length}</span></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </aside>
+        )}
+
+        {/* Main Panel */}
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-hidden">
+            {activeTab === 'editor' && (
+              <CodeEditor value={code} onChange={handleCodeChange} />
+            )}
+            {activeTab === 'macros' && (
+              <MacroBuilder onCodeGenerated={handleCodeGenerated} />
+            )}
+            {activeTab === 'docs' && (
+              <Documentation onInsertExample={handleInsertExample} />
+            )}
+            {activeTab === 'learn' && (
+              <Learning onInsertCode={handleInsertCode} />
+            )}
+          </div>
+          {/* Output Panel */}
+          {showOutput && (
+            <div className="h-48 border-t border-gray-700">
+              <OutputPanel code={code} />
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* Status Bar */}
+      <footer className="h-6 flex items-center px-4 border-t border-gray-700 bg-gray-800/80 text-xs text-gray-500 shrink-0">
+        <span>AHK v1.1</span>
+        <span className="mx-2">|</span>
+        <span>UTF-8</span>
+        <span className="mx-2">|</span>
+        <span>Строк: {code.split('\n').length}</span>
+        <div className="flex-1" />
+        {!saved && <span className="text-yellow-400">● Несохранённые изменения</span>}
+        {saved && <span className="text-green-400">✓ Сохранено</span>}
+      </footer>
+    </div>
   );
 }
