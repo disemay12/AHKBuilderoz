@@ -10,6 +10,8 @@ import Simulator from './components/Simulator';
 import AIGenerator from './components/AIGenerator';
 import AIChat from './components/AIChat';
 import InteractiveTutorials from './components/InteractiveTutorials';
+import CoordinateHelper from './components/CoordinateHelper';
+import PixelTester from './components/PixelTester';
 import CommandPalette from './components/CommandPalette';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import VersionHistory from './components/VersionHistory';
@@ -32,6 +34,8 @@ import {
   Sparkles,
   MessageCircle,
   Award,
+  MousePointer2,
+  Palette,
 } from 'lucide-react';
 
 type Tab = 'editor' | 'macros' | 'docs' | 'learn' | 'chat' | 'tutorials';
@@ -46,6 +50,8 @@ export default function App() {
   const [showOutput, setShowOutput] = useState(false);
   const [showSimulator, setShowSimulator] = useState(false);
   const [showTextToMacro, setShowTextToMacro] = useState(false);
+  const [showCoordinateHelper, setShowCoordinateHelper] = useState(false);
+  const [showPixelTester, setShowPixelTester] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
 
   // Load last script
@@ -446,10 +452,26 @@ F1::
           <div className="w-px h-6 bg-gray-700 mx-1" />
           <Tooltip content={showTextToMacro ? 'Скрыть ИИ-генератор' : 'ИИ-генератор макросов (бесплатно)'} position="bottom">
             <button
-              onClick={() => { setShowTextToMacro(!showTextToMacro); if (!showTextToMacro) { setShowOutput(false); setShowSimulator(false); } }}
+              onClick={() => { setShowTextToMacro(!showTextToMacro); if (!showTextToMacro) { setShowOutput(false); setShowSimulator(false); setShowCoordinateHelper(false); } }}
               className={`p-2 rounded transition-colors ${showTextToMacro ? 'bg-purple-900/50 text-purple-400' : 'hover:bg-gray-700 text-gray-400 hover:text-white'}`}
             >
               <Sparkles size={16} />
+            </button>
+          </Tooltip>
+          <Tooltip content={showCoordinateHelper ? 'Скрыть координатный помощник' : 'Координатный помощник'} position="bottom">
+            <button
+              onClick={() => { setShowCoordinateHelper(!showCoordinateHelper); if (!showCoordinateHelper) { setShowOutput(false); setShowSimulator(false); setShowTextToMacro(false); setShowPixelTester(false); } }}
+              className={`p-2 rounded transition-colors ${showCoordinateHelper ? 'bg-cyan-900/50 text-cyan-400' : 'hover:bg-gray-700 text-gray-400 hover:text-white'}`}
+            >
+              <MousePointer2 size={16} />
+            </button>
+          </Tooltip>
+          <Tooltip content={showPixelTester ? 'Скрыть тестировщик пикселей' : 'Тестировщик пикселей'} position="bottom">
+            <button
+              onClick={() => { setShowPixelTester(!showPixelTester); if (!showPixelTester) { setShowOutput(false); setShowSimulator(false); setShowTextToMacro(false); setShowCoordinateHelper(false); } }}
+              className={`p-2 rounded transition-colors ${showPixelTester ? 'bg-purple-900/50 text-purple-400' : 'hover:bg-gray-700 text-gray-400 hover:text-white'}`}
+            >
+              <Palette size={16} />
             </button>
           </Tooltip>
           <Tooltip content={showSimulator ? 'Скрыть симулятор' : 'Симулятор выполнения AHK'} position="bottom">
@@ -627,6 +649,26 @@ F1::
           {showOutput && (
             <div className="h-48 border-t border-gray-700">
               <OutputPanel code={code} />
+            </div>
+          )}
+          {/* Coordinate Helper Panel */}
+          {showCoordinateHelper && (
+            <div className="h-96 border-t border-gray-700">
+              <CoordinateHelper onInsertCode={(coordCode) => {
+                setCode(prev => prev + '\n' + coordCode);
+                setActiveTab('editor');
+                setSaved(false);
+              }} />
+            </div>
+          )}
+          {/* Pixel Tester Panel */}
+          {showPixelTester && (
+            <div className="h-96 border-t border-gray-700">
+              <PixelTester onInsertCode={(pixelCode) => {
+                setCode(prev => prev + '\n' + pixelCode);
+                setActiveTab('editor');
+                setSaved(false);
+              }} />
             </div>
           )}
         </main>

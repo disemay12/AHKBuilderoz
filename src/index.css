@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* Tailwind v4 Theme Configuration */
+@theme {
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-tertiary: var(--bg-tertiary);
+  --color-bg-hover: var(--bg-hover);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border-color);
+  --color-border-hover: var(--border-hover);
+}
+
 /* CSS Variables for theming */
 :root {
   /* Dark theme (default) */
@@ -46,68 +59,61 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Override Tailwind classes for theming */
-.light .bg-gray-900 {
+/* Light theme overrides for Tailwind classes */
+.light {
+  color-scheme: light;
+}
+
+.light body,
+.light .bg-gray-900,
+.light .bg-gray-800,
+.light .bg-gray-700 {
   background-color: var(--bg-secondary) !important;
 }
 
-.light .bg-gray-800 {
+.light .bg-gray-800\/50,
+.light .bg-gray-800\/30 {
   background-color: var(--bg-tertiary) !important;
 }
 
-.light .bg-gray-800\/50 {
-  background-color: color-mix(in srgb, var(--bg-tertiary) 50%, transparent) !important;
-}
-
-.light .bg-gray-800\/30 {
-  background-color: color-mix(in srgb, var(--bg-tertiary) 30%, transparent) !important;
-}
-
-.light .bg-gray-700 {
-  background-color: var(--bg-hover) !important;
-}
-
-.light .bg-gray-700\/50 {
-  background-color: color-mix(in srgb, var(--bg-hover) 50%, transparent) !important;
-}
-
-.light .text-white {
+.light .text-white,
+.light .text-gray-100,
+.light .text-gray-200 {
   color: var(--text-primary) !important;
 }
 
+.light .text-gray-300,
 .light .text-gray-400 {
-  color: var(--text-muted) !important;
-}
-
-.light .text-gray-500 {
-  color: var(--text-muted) !important;
-}
-
-.light .text-gray-300 {
   color: var(--text-secondary) !important;
 }
 
-.light .text-gray-200 {
-  color: var(--text-secondary) !important;
+.light .text-gray-500,
+.light .text-gray-600 {
+  color: var(--text-muted) !important;
 }
 
-.light .border-gray-700 {
+.light .border-gray-700,
+.light .border-gray-600,
+.light .border-gray-800 {
   border-color: var(--border-color) !important;
 }
 
-.light .border-gray-600 {
-  border-color: var(--border-color) !important;
-}
-
-.light .hover\:bg-gray-700:hover {
-  background-color: var(--bg-hover) !important;
-}
-
+.light .hover\:bg-gray-700:hover,
 .light .hover\:bg-gray-600:hover {
   background-color: var(--bg-hover) !important;
 }
 
-.light .hover\:text-white:hover {
+.light input,
+.light textarea,
+.light select {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.light pre,
+.light code {
+  background-color: var(--bg-tertiary) !important;
   color: var(--text-primary) !important;
 }
 
