@@ -9,6 +9,7 @@ import OutputPanel from './components/OutputPanel';
 import Simulator from './components/Simulator';
 import AIGenerator from './components/AIGenerator';
 import AIChat from './components/AIChat';
+import InteractiveTutorials from './components/InteractiveTutorials';
 import CommandPalette from './components/CommandPalette';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import VersionHistory from './components/VersionHistory';
@@ -30,9 +31,10 @@ import {
   Play,
   Sparkles,
   MessageCircle,
+  Award,
 } from 'lucide-react';
 
-type Tab = 'editor' | 'macros' | 'docs' | 'learn' | 'chat';
+type Tab = 'editor' | 'macros' | 'docs' | 'learn' | 'chat' | 'tutorials';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('editor');
@@ -272,6 +274,13 @@ F1::
       action: () => setActiveTab('chat'),
     },
     {
+      id: 'tab-tutorials',
+      label: 'Переключиться на туториалы',
+      description: 'Открыть интерактивные уроки с заданиями',
+      icon: '🏆',
+      action: () => setActiveTab('tutorials'),
+    },
+    {
       id: 'new-script',
       label: 'Новый скрипт',
       description: 'Создать новый пустой скрипт',
@@ -349,6 +358,7 @@ F1::
     { id: 'macros', label: 'Макросы', icon: <Blocks size={18} /> },
     { id: 'docs', label: 'Документация', icon: <BookOpen size={18} /> },
     { id: 'learn', label: 'Обучение', icon: <GraduationCap size={18} /> },
+    { id: 'tutorials', label: 'Туториалы', icon: <Award size={18} /> },
     { id: 'chat', label: 'ИИ Чат', icon: <MessageCircle size={18} /> },
   ];
 
@@ -584,6 +594,13 @@ F1::
           )}
           {activeTab === 'chat' && (
             <AIChat onCodeGenerated={(code) => {
+              setCode(prev => prev + '\n\n' + code);
+              setActiveTab('editor');
+              setSaved(false);
+            }} />
+          )}
+          {activeTab === 'tutorials' && (
+            <InteractiveTutorials onInsertCode={(code) => {
               setCode(prev => prev + '\n\n' + code);
               setActiveTab('editor');
               setSaved(false);

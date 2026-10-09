@@ -16,15 +16,23 @@ export default function ThemeSwitcher({ onThemeChange }: ThemeSwitcherProps) {
 
   useEffect(() => {
     const root = document.documentElement;
+    const body = document.body;
+    
+    // Удаляем все классы тем
+    root.classList.remove('light', 'dark');
+    body.classList.remove('light', 'dark');
     
     if (theme === 'system') {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      root.classList.toggle('dark', prefersDark);
-      root.classList.toggle('light', !prefersDark);
-    } else {
-      root.classList.toggle('dark', theme === 'dark');
-      root.classList.toggle('light', theme === 'light');
+      if (!prefersDark) {
+        root.classList.add('light');
+        body.classList.add('light');
+      }
+    } else if (theme === 'light') {
+      root.classList.add('light');
+      body.classList.add('light');
     }
+    // Для dark темы не добавляем никаких классов (по умолчанию)
     
     localStorage.setItem('ahk-theme', theme);
     onThemeChange?.(theme);
