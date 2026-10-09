@@ -6,6 +6,8 @@ import Documentation from './components/Documentation';
 import Learning from './components/Learning';
 import ScriptManager from './components/ScriptManager';
 import OutputPanel from './components/OutputPanel';
+import Simulator from './components/Simulator';
+import TextToMacro from './components/TextToMacro';
 import Tooltip from './components/Tooltip';
 import {
   Code2,
@@ -21,6 +23,8 @@ import {
   PanelLeftOpen,
   Zap,
   Terminal,
+  Play,
+  Sparkles,
 } from 'lucide-react';
 
 type Tab = 'editor' | 'macros' | 'docs' | 'learn';
@@ -33,6 +37,8 @@ export default function App() {
   const [sidebarTab, setSidebarTab] = useState<'scripts' | 'info'>('scripts');
   const [saved, setSaved] = useState(true);
   const [showOutput, setShowOutput] = useState(false);
+  const [showSimulator, setShowSimulator] = useState(false);
+  const [showTextToMacro, setShowTextToMacro] = useState(false);
 
   // Load last script
   useEffect(() => {
@@ -237,10 +243,26 @@ F1::
             </button>
           </Tooltip>
           <div className="w-px h-6 bg-gray-700 mx-1" />
+          <Tooltip content={showTextToMacro ? 'Скрыть генератор макросов' : 'Генератор макросов из текста'} position="bottom">
+            <button
+              onClick={() => { setShowTextToMacro(!showTextToMacro); if (!showTextToMacro) { setShowOutput(false); setShowSimulator(false); } }}
+              className={`p-2 rounded transition-colors ${showTextToMacro ? 'bg-yellow-900/50 text-yellow-400' : 'hover:bg-gray-700 text-gray-400 hover:text-white'}`}
+            >
+              <Sparkles size={16} />
+            </button>
+          </Tooltip>
+          <Tooltip content={showSimulator ? 'Скрыть симулятор' : 'Симулятор выполнения AHK'} position="bottom">
+            <button
+              onClick={() => { setShowSimulator(!showSimulator); if (!showSimulator) { setShowOutput(false); setShowTextToMacro(false); } }}
+              className={`p-2 rounded transition-colors ${showSimulator ? 'bg-green-900/50 text-green-400' : 'hover:bg-gray-700 text-gray-400 hover:text-white'}`}
+            >
+              <Play size={16} />
+            </button>
+          </Tooltip>
           <Tooltip content={showOutput ? 'Скрыть панель анализа кода' : 'Показать панель анализа кода'} position="bottom">
             <button
-              onClick={() => setShowOutput(!showOutput)}
-              className={`p-2 rounded transition-colors ${showOutput ? 'bg-green-900/50 text-green-400' : 'hover:bg-gray-700 text-gray-400 hover:text-white'}`}
+              onClick={() => { setShowOutput(!showOutput); if (!showOutput) { setShowSimulator(false); setShowTextToMacro(false); } }}
+              className={`p-2 rounded transition-colors ${showOutput ? 'bg-blue-900/50 text-blue-400' : 'hover:bg-gray-700 text-gray-400 hover:text-white'}`}
               title="Панель анализа"
             >
               <Terminal size={16} />
@@ -361,6 +383,23 @@ F1::
               <Learning onInsertCode={handleInsertCode} />
             )}
           </div>
+          {/* Text To Macro Panel */}
+          {showTextToMacro && (
+            <div className="border-t border-gray-700">
+              <TextToMacro onCodeGenerated={(genCode) => {
+                setCode(prev => prev + '\n\n' + genCode);
+                setActiveTab('editor');
+                setShowTextToMacro(false);
+                setSaved(false);
+              }} />
+            </div>
+          )}
+          {/* Simulator Panel */}
+          {showSimulator && (
+            <div className="h-56 border-t border-gray-700">
+              <Simulator code={code} />
+            </div>
+          )}
           {/* Output Panel */}
           {showOutput && (
             <div className="h-48 border-t border-gray-700">
