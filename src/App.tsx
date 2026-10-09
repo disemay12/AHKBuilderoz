@@ -12,6 +12,9 @@ import AIChat from './components/AIChat';
 import InteractiveTutorials from './components/InteractiveTutorials';
 import CoordinateHelper from './components/CoordinateHelper';
 import PixelTester from './components/PixelTester';
+import WindowDetector from './components/WindowDetector';
+import CloudSync from './components/CloudSync';
+import MacroGallery from './components/MacroGallery';
 import CommandPalette from './components/CommandPalette';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import VersionHistory from './components/VersionHistory';
@@ -36,9 +39,12 @@ import {
   Award,
   MousePointer2,
   Palette,
+  Monitor,
+  Cloud,
+  GalleryVertical,
 } from 'lucide-react';
 
-type Tab = 'editor' | 'macros' | 'docs' | 'learn' | 'chat' | 'tutorials';
+type Tab = 'editor' | 'macros' | 'docs' | 'learn' | 'chat' | 'tutorials' | 'windows' | 'cloud' | 'gallery';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('editor');
@@ -366,6 +372,9 @@ F1::
     { id: 'learn', label: 'Обучение', icon: <GraduationCap size={18} /> },
     { id: 'tutorials', label: 'Туториалы', icon: <Award size={18} /> },
     { id: 'chat', label: 'ИИ Чат', icon: <MessageCircle size={18} /> },
+    { id: 'windows', label: 'Окна', icon: <Monitor size={18} /> },
+    { id: 'cloud', label: 'Облако', icon: <Cloud size={18} /> },
+    { id: 'gallery', label: 'Галерея', icon: <GalleryVertical size={18} /> },
   ];
 
   return (
@@ -627,7 +636,32 @@ F1::
               setActiveTab('editor');
               setSaved(false);
             }} />
-          )}          </div>
+          )}
+          {activeTab === 'windows' && (
+            <WindowDetector onInsertCode={(code) => {
+              setCode(prev => prev + '\n' + code);
+              setActiveTab('editor');
+              setSaved(false);
+            }} />
+          )}
+          {activeTab === 'cloud' && (
+            <CloudSync
+              code={code}
+              onLoadCode={(loadedCode) => {
+                setCode(loadedCode);
+                setActiveTab('editor');
+                setSaved(false);
+              }}
+            />
+          )}
+          {activeTab === 'gallery' && (
+            <MacroGallery onLoadCode={(loadedCode) => {
+              setCode(loadedCode);
+              setActiveTab('editor');
+              setSaved(false);
+            }} />
+          )}
+          </div>
           {/* AI Generator Panel */}
           {showTextToMacro && (
             <div className="border-t border-gray-700">
