@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Play, Square, Terminal, Info } from 'lucide-react';
 import Tooltip from './Tooltip';
 
@@ -183,27 +183,53 @@ function simulateCode(code: string): LogEntry[] {
 export default function Simulator({ code }: SimulatorProps) {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isRunning, setIsRunning] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Очистка интервала при размонтировании
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
 
   const handleRun = () => {
     if (!code.trim()) return;
+    
+    // Очистка предыдущего интервала если есть
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    
     setIsRunning(true);
     setLogs([]);
 
     const allLogs = simulateCode(code);
     let index = 0;
 
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       if (index < allLogs.length) {
-        setLogs(prev => [...prev, allLogs[index]]);
+        const log = allLogs[index];
+        if (log) {
+          setLogs(prev => [...prev, log]);
+        }
         index++;
       } else {
-        clearInterval(interval);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
         setIsRunning(false);
       }
     }, 100);
   };
 
   const handleStop = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     setIsRunning(false);
   };
 
@@ -246,7 +272,7 @@ export default function Simulator({ code }: SimulatorProps) {
           </div>
         ) : (
           <div className="space-y-0.5">
-            {logs.map((log, i) => (
+            {logs.filter(log => log).map((log, i) => (
               <div
                 key={i}
                 className={`py-0.5 ${
