@@ -7,7 +7,7 @@ import Learning from './components/Learning';
 import ScriptManager from './components/ScriptManager';
 import OutputPanel from './components/OutputPanel';
 import Simulator from './components/Simulator';
-import TextToMacro from './components/TextToMacro';
+import AIGenerator from './components/AIGenerator';
 import Tooltip from './components/Tooltip';
 import {
   Code2,
@@ -243,10 +243,10 @@ F1::
             </button>
           </Tooltip>
           <div className="w-px h-6 bg-gray-700 mx-1" />
-          <Tooltip content={showTextToMacro ? 'Скрыть генератор макросов' : 'Генератор макросов из текста'} position="bottom">
+          <Tooltip content={showTextToMacro ? 'Скрыть ИИ-генератор' : 'ИИ-генератор макросов (бесплатно)'} position="bottom">
             <button
               onClick={() => { setShowTextToMacro(!showTextToMacro); if (!showTextToMacro) { setShowOutput(false); setShowSimulator(false); } }}
-              className={`p-2 rounded transition-colors ${showTextToMacro ? 'bg-yellow-900/50 text-yellow-400' : 'hover:bg-gray-700 text-gray-400 hover:text-white'}`}
+              className={`p-2 rounded transition-colors ${showTextToMacro ? 'bg-purple-900/50 text-purple-400' : 'hover:bg-gray-700 text-gray-400 hover:text-white'}`}
             >
               <Sparkles size={16} />
             </button>
@@ -383,10 +383,10 @@ F1::
               <Learning onInsertCode={handleInsertCode} />
             )}
           </div>
-          {/* Text To Macro Panel */}
+          {/* AI Generator Panel */}
           {showTextToMacro && (
             <div className="border-t border-gray-700">
-              <TextToMacro onCodeGenerated={(genCode) => {
+              <AIGenerator onCodeGenerated={(genCode: string) => {
                 setCode(prev => prev + '\n\n' + genCode);
                 setActiveTab('editor');
                 setShowTextToMacro(false);
