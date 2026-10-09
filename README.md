@@ -107,6 +107,7 @@ git subtree push --prefix dist origin gh-pages
 ### Горячие клавиши
 
 - `Ctrl+S` - Сохранить скрипт
+- `Ctrl+P` - Открыть командную палитру
 - `Ctrl+Space` - Автодополнение
 - `Ctrl+/` - Закомментировать строку
 - `Ctrl+F` - Поиск

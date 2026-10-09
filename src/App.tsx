@@ -176,8 +176,8 @@ F1::
         e.preventDefault();
         handleSave();
       }
-      // Command Palette: Ctrl+Shift+P
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'P') {
+      // Command Palette: Ctrl+P
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
         e.preventDefault();
         setShowCommandPalette(true);
       }
@@ -500,7 +500,7 @@ F1::
               {showSidebar ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
             </button>
           </Tooltip>
-          <Tooltip content="Командная палитра (Ctrl+Shift+P)" position="bottom">
+          <Tooltip content="Командная палитра (Ctrl+P)" position="bottom">
             <button
               onClick={() => setShowCommandPalette(true)}
               className="p-2 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
@@ -682,7 +682,7 @@ F1::
         <span className="mx-2">|</span>
         <span>Строк: {code.split('\n').length}</span>
         <div className="flex-1" />
-        <span className="mr-2">Ctrl+Shift+P — команды</span>
+        <span className="mr-2">Ctrl+P — команды</span>
         {!saved && <span className="text-yellow-400">● Несохранённые изменения</span>}
         {saved && <span className="text-green-400">✓ Сохранено</span>}
       </footer>
