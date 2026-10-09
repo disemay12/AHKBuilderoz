@@ -7,11 +7,13 @@ import {
 } from '../data/macroData';
 import { parseHotkey, hotkeyToReadable } from '../utils/hotkeyParser';
 import Tooltip from './Tooltip';
+import HotkeyRecorder from './HotkeyRecorder';
+import ImportAHK from './ImportAHK';
 import {
   Plus, Trash2, ChevronUp, ChevronDown, Code, Copy, Check,
   FolderOpen, ChevronRight, ChevronDown as ChevronDownIcon,
   GripVertical, Search, Gamepad2, Briefcase,
-  Keyboard, HelpCircle
+  Keyboard, HelpCircle, Upload
 } from 'lucide-react';
 
 interface MacroBuilderProps {
@@ -34,6 +36,7 @@ export default function MacroBuilder({ onCodeGenerated }: MacroBuilderProps) {
   const [activeContainerId, setActiveContainerId] = useState<string | null>(null);
   const [showPalette, setShowPalette] = useState(true);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('Все');
   const [searchBlock, setSearchBlock] = useState('');
   const [copied, setCopied] = useState(false);
@@ -188,6 +191,15 @@ export default function MacroBuilder({ onCodeGenerated }: MacroBuilderProps) {
     setShowTemplates(false);
   };
 
+  // Импорт AHK кода
+  const handleImport = (importedContainers: HotkeyContainer[]) => {
+    setContainers([...containers, ...importedContainers]);
+    if (importedContainers.length > 0) {
+      setActiveContainerId(importedContainers[0].id);
+    }
+    setShowImport(false);
+  };
+
   // Генерация кода
   const handleGenerate = () => {
     const code = generateFromContainers(containers);
@@ -241,6 +253,16 @@ export default function MacroBuilder({ onCodeGenerated }: MacroBuilderProps) {
             }`}
           >
             <FolderOpen size={14} className="inline mr-1" /> Шаблоны
+          </button>
+        </Tooltip>
+        <Tooltip content="Импортировать существующий AHK скрипт">
+          <button
+            onClick={() => setShowImport(!showImport)}
+            className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+              showImport ? 'bg-orange-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            <Upload size={14} className="inline mr-1" /> Импорт
           </button>
         </Tooltip>
         <div className="flex-1" />
@@ -354,8 +376,18 @@ export default function MacroBuilder({ onCodeGenerated }: MacroBuilderProps) {
 
         {/* Main Canvas */}
         <div className="flex-1 overflow-y-auto p-4">
+          {/* Import Panel */}
+          {showImport && (
+            <div className="mb-4">
+              <ImportAHK onImport={handleImport} />
+            </div>
+          )}
+
           {/* Add Hotkey Container */}
-          <HotkeyCreator onAdd={addContainer} />
+          <HotkeyCreator 
+            onAdd={addContainer} 
+            existingHotkeys={containers.map(c => c.hotkey)}
+          />
 
           {/* Containers */}
           {containers.length === 0 ? (
@@ -395,43 +427,36 @@ export default function MacroBuilder({ onCodeGenerated }: MacroBuilderProps) {
 }
 
 // Компонент создания горячей клавиши
-function HotkeyCreator({ onAdd }: { onAdd: (hotkey: string, desc: string) => void }) {
-  const [input, setInput] = useState('');
+function HotkeyCreator({ onAdd, existingHotkeys = [] }: { onAdd: (hotkey: string, desc: string) => void; existingHotkeys?: string[] }) {
+  const [hotkey, setHotkey] = useState('');
   const [description, setDescription] = useState('');
-  const parsed = parseHotkey(input);
+
+  const handleCreate = () => {
+    if (hotkey) {
+      onAdd(hotkey, description);
+      setHotkey('');
+      setDescription('');
+    }
+  };
 
   return (
     <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-700/30 rounded-lg p-4">
       <div className="flex items-center gap-2 mb-3">
         <Keyboard size={18} className="text-blue-400" />
         <h3 className="text-sm font-bold text-white">Новая горячая клавиша</h3>
-        <Tooltip content="Введите комбинацию клавиш на русском или английском. Примеры: ctrl+s, alt+f4, win+d, ctrl+shift+t, f1">
+        <Tooltip content="Нажмите на поле и введите комбинацию клавиш. Примеры: Ctrl+S, Alt+F4, Win+D, Ctrl+Shift+T, F1">
           <HelpCircle size={14} className="text-gray-400 cursor-help" />
         </Tooltip>
       </div>
       <div className="flex gap-2 items-end flex-wrap">
         <div className="flex-1 min-w-[200px]">
           <label className="text-xs text-gray-400 mb-1 block">Комбинация клавиш</label>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="например: ctrl+alt+h или f1"
-            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && parsed) {
-                onAdd(input, description);
-                setInput('');
-                setDescription('');
-              }
-            }}
+          <HotkeyRecorder
+            value={hotkey}
+            onChange={setHotkey}
+            existingHotkeys={existingHotkeys}
+            placeholder="Нажмите для записи комбинации..."
           />
-          {parsed && (
-            <div className="mt-1 text-xs text-green-400">
-              ✓ AHK формат: <code className="bg-black/50 px-1 rounded">{parsed}</code>
-              {' '}({hotkeyToReadable(parsed)})
-            </div>
-          )}
         </div>
         <div className="flex-1 min-w-[200px]">
           <label className="text-xs text-gray-400 mb-1 block">Описание (необязательно)</label>
@@ -445,14 +470,8 @@ function HotkeyCreator({ onAdd }: { onAdd: (hotkey: string, desc: string) => voi
         </div>
         <Tooltip content="Создать контейнер горячей клавиши">
           <button
-            onClick={() => {
-              if (parsed) {
-                onAdd(input, description);
-                setInput('');
-                setDescription('');
-              }
-            }}
-            disabled={!parsed}
+            onClick={handleCreate}
+            disabled={!hotkey}
             className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm font-medium transition-colors"
           >
             <Plus size={14} className="inline mr-1" /> Создать
@@ -500,13 +519,13 @@ function HotkeyContainerView({
       <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-700/50">
         <div className="flex items-center gap-2 flex-1">
           <span className="text-xl">🔑</span>
-          <input
-            type="text"
-            value={container.hotkey}
-            onChange={(e) => onUpdate({ hotkey: e.target.value })}
-            className="bg-gray-900 border border-gray-700 rounded px-2 py-1 text-sm font-mono text-yellow-300 w-32 focus:border-blue-500 focus:outline-none"
-            onClick={(e) => e.stopPropagation()}
-          />
+          <div className="w-64" onClick={(e) => e.stopPropagation()}>
+            <HotkeyRecorder
+              value={container.hotkey}
+              onChange={(value) => onUpdate({ hotkey: value })}
+              placeholder="Изменить комбинацию..."
+            />
+          </div>
           <input
             type="text"
             value={container.description}

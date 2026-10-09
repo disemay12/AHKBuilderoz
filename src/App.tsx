@@ -8,6 +8,7 @@ import ScriptManager from './components/ScriptManager';
 import OutputPanel from './components/OutputPanel';
 import Simulator from './components/Simulator';
 import AIGenerator from './components/AIGenerator';
+import AIChat from './components/AIChat';
 import CommandPalette from './components/CommandPalette';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import VersionHistory from './components/VersionHistory';
@@ -28,9 +29,10 @@ import {
   Terminal,
   Play,
   Sparkles,
+  MessageCircle,
 } from 'lucide-react';
 
-type Tab = 'editor' | 'macros' | 'docs' | 'learn';
+type Tab = 'editor' | 'macros' | 'docs' | 'learn' | 'chat';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('editor');
@@ -263,6 +265,13 @@ F1::
       action: () => setActiveTab('learn'),
     },
     {
+      id: 'tab-chat',
+      label: 'Переключиться на ИИ чат',
+      description: 'Открыть чат с ИИ-помощником по AHK',
+      icon: '💬',
+      action: () => setActiveTab('chat'),
+    },
+    {
       id: 'new-script',
       label: 'Новый скрипт',
       description: 'Создать новый пустой скрипт',
@@ -340,6 +349,7 @@ F1::
     { id: 'macros', label: 'Макросы', icon: <Blocks size={18} /> },
     { id: 'docs', label: 'Документация', icon: <BookOpen size={18} /> },
     { id: 'learn', label: 'Обучение', icon: <GraduationCap size={18} /> },
+    { id: 'chat', label: 'ИИ Чат', icon: <MessageCircle size={18} /> },
   ];
 
   return (
@@ -569,10 +579,16 @@ F1::
             {activeTab === 'docs' && (
               <Documentation onInsertExample={handleInsertExample} />
             )}
-            {activeTab === 'learn' && (
-              <Learning onInsertCode={handleInsertCode} />
-            )}
-          </div>
+          {activeTab === 'learn' && (
+            <Learning onInsertCode={handleInsertCode} />
+          )}
+          {activeTab === 'chat' && (
+            <AIChat onCodeGenerated={(code) => {
+              setCode(prev => prev + '\n\n' + code);
+              setActiveTab('editor');
+              setSaved(false);
+            }} />
+          )}          </div>
           {/* AI Generator Panel */}
           {showTextToMacro && (
             <div className="border-t border-gray-700">

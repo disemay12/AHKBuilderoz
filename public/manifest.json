@@ -1,0 +1,21 @@
+{
+  "name": "AHK Script Editor",
+  "short_name": "AHK Editor",
+  "description": "Редактор AutoHotkey скриптов с визуальным конструктором макросов",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#3b82f6",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["developer", "productivity"],
+  "lang": "ru",
+  "dir": "ltr"
+}
