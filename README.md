@@ -1,16 +1,37 @@
 # AHK Script Editor - Редактор AutoHotkey скриптов
 
+[![Deploy](https://img.shields.io/badge/Live-Demo-blue)](https://YOUR_USERNAME.github.io/ahk-script-editor/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Build](https://img.shields.io/badge/build-passing-brightgreen)]()
+
 Веб-приложение для создания, редактирования и изучения скриптов AutoHotkey с поддержкой Monaco Editor, визуального конструктора макросов, документации и обучающего режима.
 
 ## 🚀 Возможности
 
+### Основные функции
 - **Редактор кода** с подсветкой синтаксиса AHK, автодополнением и сниппетами
 - **Визуальный конструктор макросов** с генерацией AHK-кода
 - **Встроенная документация** с примерами и объяснениями
-- **Обучающий режим** из 5 уроков от простого к сложному
 - **Менеджер скриптов** с сохранением в LocalStorage, экспортом/импортом .ahk файлов
 - **Анализатор кода** с разбором структуры и статистикой
-- **Тёмная тема** и адаптивный дизайн
+
+### Инструменты автоматизации
+- **Детектор окон** - управление окнами через заголовки
+- **Координатный помощник** - визуальное определение координат мыши
+- **Тестировщик пикселей** - поиск цвета на экране
+- **ИИ-генератор макросов** - создание кода из текстового описания
+
+### Обучение и помощь
+- **Интерактивные туториалы** - 4 урока с пошаговыми заданиями
+- **Чат с ИИ-помощником** - вопросы по AHK в реальном времени
+- **Галерея макросов** - коллекция готовых шаблонов
+
+### Дополнительные возможности
+- **Облачная синхронизация** через Puter.js
+- **Версионирование скриптов** с историей изменений
+- **Импорт AHK скриптов** в визуальные блоки
+- **PWA** - работа офлайн после первой загрузки
+- **Командная палитра** (Ctrl+P) для быстрого доступа
 
 ## 📦 Установка и запуск
 
@@ -36,71 +57,61 @@ npm run build
 
 ## 🌐 Деплой на GitHub Pages
 
-### Автоматический деплой (рекомендуется)
+Подробная инструкция по деплою находится в файле [DEPLOYMENT.md](DEPLOYMENT.md).
 
-1. **Создайте репозиторий на GitHub:**
+### Быстрый старт
+
+1. **Создайте репозиторий на GitHub** и загрузите код:
    ```bash
    git init
    git add .
    git commit -m "Initial commit"
    git branch -M main
-   git remote add origin https://github.com/ВАШ_ЛОГИН/ahk-script-editor.git
+   git remote add origin https://github.com/YOUR_USERNAME/ahk-script-editor.git
    git push -u origin main
    ```
 
 2. **Настройте GitHub Pages:**
    - Перейдите в Settings → Pages
-   - В разделе "Build and deployment" выберите "GitHub Actions"
+   - В разделе "Source" выберите **"GitHub Actions"**
    - Workflow уже настроен в `.github/workflows/deploy.yml`
 
-3. **Обновите `vite.config.js`** (замените `ahk-script-editor` на имя вашего репозитория):
-   ```javascript
-   export default defineConfig({
-     base: '/ahk-script-editor/',
-     plugins: [react(), tailwindcss()],
-     // ... остальной код
-   });
+3. **Дождитесь завершения** (1-3 минуты)
+
+4. **Ваш сайт будет доступен по адресу:**
+   ```
+   https://YOUR_USERNAME.github.io/ahk-script-editor/
    ```
 
-4. **Запушьте изменения:**
-   ```bash
-   git add .
-   git commit -m "Configure for GitHub Pages"
-   git push
-   ```
+### Автоматические обновления
 
-5. **Дождитесь завершения GitHub Actions** (обычно 1-2 минуты)
-
-6. **Ваш сайт будет доступен по адресу:**
-   ```
-   https://ВАШ_ЛОГИН.github.io/ahk-script-editor/
-   ```
-
-### Альтернативный способ: ручная загрузка
-
-Если не хотите использовать GitHub Actions:
+Теперь при каждом `git push` в ветку `main` сайт будет автоматически обновляться!
 
 ```bash
-# Соберите проект
-npm run build
-
-# Создайте ветку gh-pages
-git checkout -b gh-pages
-git add -f dist
-git commit -m "Deploy to GitHub Pages"
-git subtree push --prefix dist origin gh-pages
+git add .
+git commit -m "Новая функция"
+git push
+# GitHub автоматически задеплоит изменения
 ```
-
-Затем в Settings → Pages выберите ветку `gh-pages` и папку `/ (root)`.
 
 ## 🛠 Технологии
 
+### Frontend
 - **React 18** + TypeScript
 - **Vite** - сборщик
 - **Tailwind CSS** - стили
-- **Monaco Editor** - редактор кода
+- **Monaco Editor** - редактор кода с подсветкой AHK
 - **Lucide React** - иконки
-- **LocalStorage** - хранение скриптов
+
+### Интеграции
+- **Puter.js** - ИИ-генерация и облачная синхронизация
+- **LocalStorage** - локальное хранение данных
+- **Canvas API** - работа с изображениями
+- **getDisplayMedia API** - захват экрана
+
+### PWA
+- **Service Worker** - офлайн работа
+- **Manifest.json** - установка как приложение
 
 ## 📝 Использование
 
@@ -111,6 +122,7 @@ git subtree push --prefix dist origin gh-pages
 - `Ctrl+Space` - Автодополнение
 - `Ctrl+/` - Закомментировать строку
 - `Ctrl+F` - Поиск
+- `Ctrl+B` - Показать/скрыть боковую панель
 
 ### AHK модификаторы
 
@@ -119,6 +131,45 @@ git subtree push --prefix dist origin gh-pages
 - `!` - Alt
 - `+` - Shift
 
+## 📁 Структура проекта
+
+```
+src/
+├── components/          # React компоненты
+│   ├── CodeEditor.tsx          # Monaco Editor с AHK подсветкой
+│   ├── MacroBuilder.tsx        # Визуальный конструктор макросов
+│   ├── WindowDetector.tsx      # Детектор окон
+│   ├── CloudSync.tsx           # Облачная синхронизация
+│   ├── MacroGallery.tsx        # Галерея макросов
+│   ├── AIChat.tsx              # Чат с ИИ-помощником
+│   ├── InteractiveTutorials.tsx # Интерактивные туториалы
+│   └── ...                     # Другие компоненты
+├── data/                # Данные и конфигурация
+├── types/               # TypeScript типы
+└── utils/               # Утилиты
+
+public/
+├── manifest.json        # PWA manifest
+├── sw.js                # Service Worker
+└── icon.svg             # Иконка приложения
+```
+
+## 🌟 Особенности
+
+### Для новичков
+- ✅ Визуальный конструктор макросов - не нужно знать код
+- ✅ Интерактивные туториалы с пошаговыми заданиями
+- ✅ ИИ-помощник для генерации кода из описания
+- ✅ Координатный помощник для точного позиционирования
+- ✅ Галерея готовых макросов
+
+### Для опытных пользователей
+- ✅ Продвинутый редактор с автодополнением
+- ✅ Импорт существующих AHK скриптов
+- ✅ Версионирование кода с историей изменений
+- ✅ Облачная синхронизация между устройствами
+- ✅ Детектор окон и тестировщик пикселей
+
 ## 📄 Лицензия
 
 MIT
@@ -126,3 +177,20 @@ MIT
 ## 🤝 Вклад
 
 Pull requests приветствуются! Для крупных изменений сначала откройте issue.
+
+## 📞 Поддержка
+
+- 📖 [Документация](DEPLOYMENT.md)
+- 🐛 [Сообщить о баге](https://github.com/YOUR_USERNAME/ahk-script-editor/issues)
+- 💡 [Предложить идею](https://github.com/YOUR_USERNAME/ahk-script-editor/issues)
+
+## 🙏 Благодарности
+
+- [AutoHotkey](https://www.autohotkey.com/) - язык автоматизации
+- [Monaco Editor](https://microsoft.github.io/monaco-editor/) - редактор кода
+- [Puter.js](https://puter.com/) - бесплатные ИИ сервисы
+- [Tailwind CSS](https://tailwindcss.com/) - CSS фреймворк
+
+---
+
+**Создано с ❤️ для сообщества AutoHotkey**
