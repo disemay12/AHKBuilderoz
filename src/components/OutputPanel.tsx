@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Play, Square, Trash2, Terminal } from 'lucide-react';
 import Tooltip from './Tooltip';
 
@@ -130,8 +130,23 @@ function analyzeCode(code: string): OutputLine[] {
 export default function OutputPanel({ code }: OutputPanelProps) {
   const [output, setOutput] = useState<OutputLine[]>([]);
   const [isRunning, setIsRunning] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Очистка интервала при размонтировании
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
 
   const handleAnalyze = () => {
+    // Очистка предыдущего интервала если есть
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
     setIsRunning(true);
     setOutput([]);
     
@@ -139,19 +154,30 @@ export default function OutputPanel({ code }: OutputPanelProps) {
     const lines = analyzeCode(code);
     let index = 0;
     
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       if (index < lines.length) {
-        setOutput(prev => [...prev, lines[index]]);
+        const line = lines[index];
+        if (line) {
+          setOutput(prev => [...prev, line]);
+        }
         index++;
       } else {
-        clearInterval(interval);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
         setIsRunning(false);
       }
     }, 50);
   };
 
   const handleClear = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     setOutput([]);
+    setIsRunning(false);
   };
 
   return (
@@ -196,7 +222,7 @@ export default function OutputPanel({ code }: OutputPanelProps) {
           </div>
         ) : (
           <div className="space-y-0.5">
-            {output.map((line, i) => (
+            {output.filter(line => line).map((line, i) => (
               <div
                 key={i}
                 className={`py-0.5 ${
