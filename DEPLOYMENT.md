@@ -15,7 +15,7 @@
 1. Перейдите на [github.com](https://github.com) и войдите в аккаунт
 2. Нажмите кнопку **"New"** (или перейдите на [github.com/new](https://github.com/new))
 3. Заполните форму:
-   - **Repository name**: `ahk-script-editor` (или любое другое имя)
+   - **Repository name**: `AHKBuilderoz`
    - **Description**: "Редактор AutoHotkey скриптов с визуальным конструктором макросов"
    - **Public** (обязательно для бесплатного GitHub Pages)
    - ❌ НЕ ставьте галочку "Add a README file" (он уже есть)
@@ -42,7 +42,7 @@ git branch -M main
 
 # Добавление удалённого репозитория
 # Замените YOUR_USERNAME на ваше имя пользователя GitHub
-git remote add origin https://github.com/YOUR_USERNAME/ahk-script-editor.git
+git remote add origin https://github.com/YOUR_USERNAME/AHKBuilderoz.git
 
 # Загрузка кода на GitHub
 git push -u origin main
@@ -68,12 +68,12 @@ git push -u origin main
 После успешного деплоя ваше приложение будет доступно по адресу:
 
 ```
-https://YOUR_USERNAME.github.io/ahk-script-editor/
+https://YOUR_USERNAME.github.io/AHKBuilderoz/
 ```
 
 Замените:
 - `YOUR_USERNAME` - ваше имя пользователя на GitHub
-- `ahk-script-editor` - имя вашего репозитория
+- `AHKBuilderoz` - имя вашего репозитория
 
 ## 🔄 Автоматические обновления
 
@@ -157,7 +157,7 @@ vercel
 1. **Поделиться ссылкой** с друзьями и коллегами
 2. **Добавить бейдж** в README:
    ```markdown
-   [![Deploy](https://img.shields.io/badge/Live-Demo-blue)](https://YOUR_USERNAME.github.io/ahk-script-editor/)
+   [![Deploy](https://img.shields.io/badge/Live-Demo-blue)](https://YOUR_USERNAME.github.io/AHKBuilderoz/)
    ```
 3. **Настроить свой домен** (опционально)
 4. **Добавить аналитику** (Google Analytics, etc.)

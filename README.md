@@ -1,6 +1,6 @@
 # AHK Script Editor - Редактор AutoHotkey скриптов
 
-[![Deploy](https://img.shields.io/badge/Live-Demo-blue)](https://YOUR_USERNAME.github.io/ahk-script-editor/)
+[![Deploy](https://img.shields.io/badge/Live-Demo-blue)](https://YOUR_USERNAME.github.io/AHKBuilderoz/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Build](https://img.shields.io/badge/build-passing-brightgreen)]()
 
@@ -67,7 +67,7 @@ npm run build
    git add .
    git commit -m "Initial commit"
    git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/ahk-script-editor.git
+   git remote add origin https://github.com/YOUR_USERNAME/AHKBuilderoz.git
    git push -u origin main
    ```
 
@@ -80,7 +80,7 @@ npm run build
 
 4. **Ваш сайт будет доступен по адресу:**
    ```
-   https://YOUR_USERNAME.github.io/ahk-script-editor/
+   https://YOUR_USERNAME.github.io/AHKBuilderoz/
    ```
 
 ### Автоматические обновления
@@ -181,8 +181,8 @@ Pull requests приветствуются! Для крупных изменен
 ## 📞 Поддержка
 
 - 📖 [Документация](DEPLOYMENT.md)
-- 🐛 [Сообщить о баге](https://github.com/YOUR_USERNAME/ahk-script-editor/issues)
-- 💡 [Предложить идею](https://github.com/YOUR_USERNAME/ahk-script-editor/issues)
+- 🐛 [Сообщить о баге](https://github.com/YOUR_USERNAME/AHKBuilderoz/issues)
+- 💡 [Предложить идею](https://github.com/YOUR_USERNAME/AHKBuilderoz/issues)
 
 ## 🙏 Благодарности
 
