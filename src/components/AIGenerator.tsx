@@ -6,14 +6,31 @@ interface AIGeneratorProps {
   onCodeGenerated: (code: string) => void;
 }
 
-type AIModel = 'openai' | 'mistral' | 'llama' | 'deepseek';
+type AIModel = 'gpt-4o-mini' | 'claude-3-haiku' | 'gemini-2.0-flash' | 'meta-llama/llama-3.3-70b-instruct' | 'deepseek/deepseek-v3-free';
 
 const models: { id: AIModel; name: string; description: string }[] = [
-  { id: 'openai', name: 'GPT (OpenAI)', description: 'Универсальная модель, хорошее понимание русского' },
-  { id: 'mistral', name: 'Mistral', description: 'Быстрая модель, хорошо работает с кодом' },
-  { id: 'llama', name: 'Llama', description: 'Открытая модель от Meta' },
-  { id: 'deepseek', name: 'DeepSeek', description: 'Специализация на коде' },
+  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', description: 'Быстрая модель OpenAI, хорошее понимание русского' },
+  { id: 'claude-3-haiku', name: 'Claude 3 Haiku', description: 'Быстрая модель Anthropic, отлично работает с кодом' },
+  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Быстрая модель Google, бесплатная' },
+  { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', description: 'Открытая модель от Meta' },
+  { id: 'deepseek/deepseek-v3-free', name: 'DeepSeek V3', description: 'Специализация на коде, бесплатная' },
 ];
+
+// Загрузка Puter.js
+const loadPuterScript = () => {
+  return new Promise<void>((resolve, reject) => {
+    if ((window as any).puter) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://js.puter.com/v2/';
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Не удалось загрузить Puter.js'));
+    document.head.appendChild(script);
+  });
+};
 
 const SYSTEM_PROMPT = `Ты — эксперт по AutoHotkey v1.1. Пользователь описывает макрос на русском языке, а ты генерируешь готовый AHK код.
 
@@ -65,33 +82,30 @@ F2::
     return`;
 
 async function generateWithAI(description: string, model: AIModel): Promise<string> {
-  const response = await fetch('https://text.pollinations.ai/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: description },
-      ],
-      model: model,
-      seed: Math.floor(Math.random() * 10000),
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Ошибка API: ${response.status}`);
+  // Загружаем Puter.js если ещё не загружен
+  await loadPuterScript();
+  
+  const puter = (window as any).puter;
+  if (!puter || !puter.ai) {
+    throw new Error('Puter.js не загружен. Проверьте интернет-соединение.');
   }
 
-  let result = await response.text();
-  
-  // Очистка ответа от markdown
-  result = result.replace(/```ahk\n?/g, '').replace(/```\n?/g, '');
-  result = result.replace(/```autohotkey\n?/g, '').replace(/```\n?/g, '');
-  result = result.trim();
-  
-  return result;
+  try {
+    const response = await puter.ai.chat(SYSTEM_PROMPT + '\n\nЗапрос пользователя: ' + description, {
+      model: model,
+    });
+
+    let result = typeof response === 'string' ? response : response?.message?.content || response?.text || '';
+    
+    // Очистка ответа от markdown
+    result = result.replace(/```ahk\n?/g, '').replace(/```\n?/g, '');
+    result = result.replace(/```autohotkey\n?/g, '').replace(/```\n?/g, '');
+    result = result.trim();
+    
+    return result;
+  } catch (err) {
+    throw new Error(`Ошибка генерации: ${err instanceof Error ? err.message : 'неизвестная ошибка'}`);
+  }
 }
 
 export default function AIGenerator({ onCodeGenerated }: AIGeneratorProps) {
@@ -99,7 +113,7 @@ export default function AIGenerator({ onCodeGenerated }: AIGeneratorProps) {
   const [result, setResult] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [selectedModel, setSelectedModel] = useState<AIModel>('openai');
+  const [selectedModel, setSelectedModel] = useState<AIModel>('gpt-4o-mini');
   const [showSettings, setShowSettings] = useState(false);
 
   const handleGenerate = async () => {
@@ -139,7 +153,7 @@ export default function AIGenerator({ onCodeGenerated }: AIGeneratorProps) {
       <div className="flex items-center gap-2 mb-3">
         <Bot size={20} className="text-purple-400" />
         <h3 className="text-sm font-bold text-white">ИИ-генератор макросов</h3>
-        <span className="text-xs text-gray-500">(Pollinations AI — бесплатно, без ключей)</span>
+        <span className="text-xs text-gray-500">(Puter.js — бесплатно, без ключей, GPT/Claude/Gemini)</span>
         <div className="flex-1" />
         <Tooltip content="Настройки модели ИИ">
           <button
@@ -255,7 +269,7 @@ export default function AIGenerator({ onCodeGenerated }: AIGeneratorProps) {
       {isLoading && (
         <div className="mt-3 flex items-center gap-2 text-purple-400 text-xs">
           <Loader2 size={14} className="animate-spin" />
-          ИИ генерирует код... Обычно занимает 3-10 секунд
+          ИИ генерирует код через Puter.js... Обычно занимает 3-10 секунд
         </div>
       )}
     </div>
